@@ -1,6 +1,8 @@
 from config.settings.base import *
 import os
 
+INSTALLED_APPS += ["django_extensions"]
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
