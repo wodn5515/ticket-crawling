@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # 3rd-party
     # apps
     "apps.accounts",
+    "apps.show",
 ]
 
 MIDDLEWARE = [
@@ -109,7 +110,9 @@ TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_L10N = True
+
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
