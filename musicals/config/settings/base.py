@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # apps
     "apps.accounts",
     "apps.show",
+    "apps.common",
 ]
 
 MIDDLEWARE = [

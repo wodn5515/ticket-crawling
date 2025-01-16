@@ -1,7 +1,8 @@
 from django.db import models
+from apps.common.models import TimeStampedModel
 
 
-class TicketOpen(models.Model):
+class TicketOpen(TimeStampedModel):
     show = models.ForeignKey("show.Show", on_delete=models.PROTECT, null=True)
     open_at = models.DateTimeField(verbose_name="오픈일시", null=True)
     name = models.CharField(max_length=255)
