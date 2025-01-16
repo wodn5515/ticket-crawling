@@ -1,16 +1,15 @@
-from apps.crawling.base import BaseCrwaling
+from apps.crawling.base import BaseCrawling
 from apps.show.models.ticketopen import TicketOpen
 from bs4 import BeautifulSoup as bs
 import requests
 import re
 
 
-class MelonCrwaling(BaseCrwaling):
+class MelonCrawling(BaseCrawling):
     url = "https://ticket.melon.com/csoon/ajax/listTicketOpen.htm"
     page_index = 1
     order_type = 2
     genre_code = "GENRE_ALL"
-    data = []
 
     def crawl_data(self):
         hdrs = self._get_header()
@@ -20,14 +19,14 @@ class MelonCrwaling(BaseCrwaling):
             response = requests.post(request_url, headers=hdrs, data=body)
             soup = bs(response.text, "html.parser")
 
-            elements = soup.select("ul.list_ticket_cont > li")
+            results = soup.select("ul.list_ticket_cont > li")
 
             # 데이터가 없을경우 중단
-            if not elements:
+            if not results or self.page_index > 100:
                 break
 
-            for element in elements:
-                datum = self._element_to_data(element)
+            for result in results:
+                datum = self._result_to_data(result)
                 self.data.append(datum)
 
             self.page_index += 10
@@ -44,12 +43,12 @@ class MelonCrwaling(BaseCrwaling):
         }
         return body
 
-    def _element_to_data(self, element):
-        name = self._get_name(element)
+    def _result_to_data(self, result):
+        name = self._get_name(result)
         site = "melon"
-        link = self._get_link(element)
-        thumbnail = self._get_thumbnail(element)
-        open_at = self._get_open_at(element)
+        link = self._get_link(result)
+        thumbnail = self._get_thumbnail(result)
+        open_at = self._get_open_at(result)
 
         if open_at is False:
             is_published = False
@@ -66,8 +65,8 @@ class MelonCrwaling(BaseCrwaling):
             "is_published": is_published,
         }
 
-    def _get_open_at(self, element):
-        open_at_text = element.select_one("span.date").text
+    def _get_open_at(self, result):
+        open_at_text = result.select_one("span.date").text
         if re.match(r"오픈일정", open_at_text):
             return None
         elif re.match(r"추후공지", open_at_text):
@@ -75,19 +74,19 @@ class MelonCrwaling(BaseCrwaling):
         else:
             return self._date_converter(open_at_text)
 
-    def _get_link(self, element):
+    def _get_link(self, result):
         return (
             "https://ticket.melon.com/csoon"
-            + element.select_one("a.tit").attrs.get("href")[1:]
+            + result.select_one("a.tit").attrs.get("href")[1:]
         )
 
-    def _get_name(self, element):
-        return element.select_one("a.tit").text.strip()
+    def _get_name(self, result):
+        return result.select_one("a.tit").text.strip()
 
-    def _get_thumbnail(self, element):
+    def _get_thumbnail(self, result):
         thumbnail = re.match(
             r"^[A-Za-z0-9:/.-]+\.(png|jpg|JPG|PNG)",
-            element.select_one("a.poster > img").attrs.get("src"),
+            result.select_one("a.poster > img").attrs.get("src"),
         )
         if thumbnail:
             return thumbnail.group()
@@ -101,19 +100,3 @@ class MelonCrwaling(BaseCrwaling):
         hour, minute = map(int, time.split(":"))
 
         return f"{year}-{month}-{day} {hour}:{minute}:00"
-
-    def data_to_db(self):
-        entities = []
-
-        for datum in self.data:
-            ticket_open = TicketOpen(
-                name=datum["name"],
-                site=datum["site"],
-                link=datum["link"],
-                thumbnail=datum["thumbnail"],
-                open_at=datum["open_at"],
-                is_published=datum["is_published"],
-            )
-            entities.append(ticket_open)
-
-        TicketOpen.objects.bulk_create(entities, ignore_conflicts=True)
