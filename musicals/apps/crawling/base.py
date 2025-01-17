@@ -9,6 +9,10 @@ class BaseCrawling(metaclass=ABCMeta):
     def crawl_data(self):
         pass
 
+    def _get_header(self):
+        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        return {"User-Agent": user_agent}
+
     def data_to_db(self):
         entities = []
 

@@ -1,5 +1,4 @@
 from apps.crawling.base import BaseCrawling
-from apps.show.models.ticketopen import TicketOpen
 from bs4 import BeautifulSoup as bs
 import requests
 import re
@@ -31,10 +30,6 @@ class MelonCrawling(BaseCrawling):
 
             self.page_index += 10
 
-    def _get_header(self):
-        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        return {"User-Agent": user_agent}
-
     def _get_body(self):
         body = {
             "pageIndex": self.page_index,
@@ -50,7 +45,7 @@ class MelonCrawling(BaseCrawling):
         site = "melon"
         link = self._get_link(result)
         thumbnail = self._get_thumbnail(result)
-        has_detail_open_at, open_at = self._get_open_at(result)
+        has_detail_open_at, open_at = self._get_open_at_and_has_detail_open_at(result)
 
         if open_at is None and has_detail_open_at is False:
             is_published = False
@@ -65,7 +60,7 @@ class MelonCrawling(BaseCrawling):
             "has_detail_open_at": has_detail_open_at,
         }
 
-    def _get_open_at(self, result) -> tuple[bool, str | None]:
+    def _get_open_at_and_has_detail_open_at(self, result) -> tuple[bool, str | None]:
         open_at_text = result.select_one("span.date").text
         if re.match(r"오픈일정", open_at_text):
             return True, None
