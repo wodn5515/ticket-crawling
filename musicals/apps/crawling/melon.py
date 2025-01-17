@@ -44,17 +44,16 @@ class MelonCrawling(BaseCrawling):
         return body
 
     def _result_to_data(self, result):
+        is_published = True
+
         name = self._get_name(result)
         site = "melon"
         link = self._get_link(result)
         thumbnail = self._get_thumbnail(result)
-        open_at = self._get_open_at(result)
+        has_detail_open_at, open_at = self._get_open_at(result)
 
-        if open_at is False:
+        if open_at is None and has_detail_open_at is False:
             is_published = False
-            open_at = None
-        else:
-            is_published = True
 
         return {
             "name": name,
@@ -63,16 +62,17 @@ class MelonCrawling(BaseCrawling):
             "thumbnail": thumbnail,
             "open_at": open_at,
             "is_published": is_published,
+            "has_detail_open_at": has_detail_open_at,
         }
 
-    def _get_open_at(self, result):
+    def _get_open_at(self, result) -> tuple[bool, str | None]:
         open_at_text = result.select_one("span.date").text
         if re.match(r"오픈일정", open_at_text):
-            return None
+            return True, None
         elif re.match(r"추후공지", open_at_text):
-            return False
+            return False, None
         else:
-            return self._date_converter(open_at_text)
+            return False, self._date_converter(open_at_text)
 
     def _get_link(self, result):
         return (

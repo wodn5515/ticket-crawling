@@ -13,14 +13,7 @@ class BaseCrawling(metaclass=ABCMeta):
         entities = []
 
         for datum in self.data:
-            ticket_open = TicketOpen(
-                name=datum["name"],
-                site=datum["site"],
-                link=datum["link"],
-                thumbnail=datum["thumbnail"],
-                open_at=datum["open_at"],
-                is_published=datum["is_published"],
-            )
+            ticket_open = TicketOpen(**datum)
             entities.append(ticket_open)
 
         TicketOpen.objects.bulk_create(entities, ignore_conflicts=True)
