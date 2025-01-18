@@ -21,8 +21,8 @@ class Yes24Crawling(BaseCrawling):
 
             results = soup.select("div.noti-tbl > table > tbody > tr")[1:]
 
-            # 데이터가 없을경우 중단
-            if not results or self.page > 5:
+            # 데이터가 없거나 10페이지가 넘어갈 경우 중단
+            if not results or self.page > 10:
                 break
 
             for result in results[1:]:
@@ -31,7 +31,7 @@ class Yes24Crawling(BaseCrawling):
 
             self.page += 1
 
-    def _get_body(self):
+    def _get_body(self) -> dict:
         body = {
             "page": self.page,
             "size": self.size,
@@ -40,7 +40,7 @@ class Yes24Crawling(BaseCrawling):
         }
         return body
 
-    def _result_to_data(self, result):
+    def _result_to_data(self, result) -> dict:
         is_published = True
 
         name = self._get_name(result)
@@ -67,15 +67,15 @@ class Yes24Crawling(BaseCrawling):
     def _get_has_detail_open_at(self, result) -> bool:
         return True if result.select("td")[2].select("a") else False
 
-    def _get_link(self, result):
+    def _get_link(self, result) -> str:
         return "http://ticket.yes24.com/New/Notice/NoticeMain.aspx" + result.select(
             "td"
         )[1].select_one("a").attrs.get("href")
 
-    def _get_name(self, result):
+    def _get_name(self, result) -> dict:
         return result.select("td")[1].select("em")[-1].text
 
-    def _date_converter(self, open_at_text):
+    def _date_converter(self, open_at_text) -> str:
         dt = re.sub(r"[(가-힣)]", "", open_at_text)
         date, time = dt.split(" ")
         year, month, day = map(int, date.split("."))

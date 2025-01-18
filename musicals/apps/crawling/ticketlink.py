@@ -23,10 +23,10 @@ class TicketlinkCrawling(BaseCrawling):
 
             self.page += 1
 
-    def _get_parameter(self):
+    def _get_parameter(self) -> dict:
         return {"page": self.page, "noticeCategoryCode": "TICKET_OPEN"}
 
-    def _result_to_data(self, result: dict):
+    def _result_to_data(self, result: dict) -> dict:
         name = self._get_name(result)
         site = "ticketlink"
         link = self._get_link(result)
@@ -47,14 +47,14 @@ class TicketlinkCrawling(BaseCrawling):
             "is_published": is_published,
         }
 
-    def _get_name(self, result: dict):
+    def _get_name(self, result: dict) -> str:
         return result["title"].replace("\u200b", "")
 
-    def _get_link(self, result: dict):
+    def _get_link(self, result: dict) -> str:
         nid = result["noticeId"]
         return f"https://www.ticketlink.co.kr/help/notice/{nid}"
 
-    def _get_open_at(self, result: dict):
+    def _get_open_at(self, result: dict) -> datetime:
         timestamp = result["ticketOpenDatetime"] / 1000
         dt = datetime.fromtimestamp(timestamp)
         return dt

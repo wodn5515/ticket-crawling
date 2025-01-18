@@ -20,7 +20,7 @@ class MelonCrawling(BaseCrawling):
 
             results = soup.select("ul.list_ticket_cont > li")
 
-            # 데이터가 없을경우 중단
+            # 데이터가 없거나 10페이지가 넘어갈 경우 중단
             if not results or self.page_index > 100:
                 break
 
@@ -30,7 +30,7 @@ class MelonCrawling(BaseCrawling):
 
             self.page_index += 10
 
-    def _get_body(self):
+    def _get_body(self) -> dict:
         body = {
             "pageIndex": self.page_index,
             "orderType": self.order_type,
@@ -38,7 +38,7 @@ class MelonCrawling(BaseCrawling):
         }
         return body
 
-    def _result_to_data(self, result):
+    def _result_to_data(self, result) -> dict:
         is_published = True
 
         name = self._get_name(result)
@@ -69,16 +69,16 @@ class MelonCrawling(BaseCrawling):
         else:
             return False, self._date_converter(open_at_text)
 
-    def _get_link(self, result):
+    def _get_link(self, result) -> str:
         return (
             "https://ticket.melon.com/csoon"
             + result.select_one("a.tit").attrs.get("href")[1:]
         )
 
-    def _get_name(self, result):
+    def _get_name(self, result) -> str:
         return result.select_one("a.tit").text.strip()
 
-    def _get_thumbnail(self, result):
+    def _get_thumbnail(self, result) -> str | None:
         thumbnail = re.match(
             r"^[A-Za-z0-9:/.-]+\.(png|jpg|JPG|PNG)",
             result.select_one("a.poster > img").attrs.get("src"),
@@ -88,7 +88,7 @@ class MelonCrawling(BaseCrawling):
         else:
             return None
 
-    def _date_converter(self, open_at_text):
+    def _date_converter(self, open_at_text) -> str:
         dt = re.sub(r"[(가-힣)]", "", open_at_text)
         date, time = dt.split(" ")
         year, month, day = map(int, date.split("."))
