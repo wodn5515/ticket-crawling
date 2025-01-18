@@ -1,6 +1,8 @@
 from config.settings.base import *
 import os
 
+DEBUG = True
+
 INSTALLED_APPS += ["django_extensions"]
 
 DATABASES = {
