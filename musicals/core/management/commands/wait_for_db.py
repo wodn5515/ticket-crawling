@@ -11,9 +11,11 @@ class Command(BaseCommand):
         db_conn_default_check = None
         while not db_conn_default_check:
             try:
+                print("DB 연결 시도중...")
                 db_conn_default = connections["default"]
                 db_conn_default.cursor()
             except OperationalError:
                 time.sleep(1)
             else:
                 db_conn_default_check = True
+                print("DB 연결 성공")
